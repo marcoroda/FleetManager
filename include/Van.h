@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace van {
@@ -10,13 +11,13 @@ namespace van {
       public:
         Van() = default;
         Van(std::string brand, int year, std::string plate_number);
-        std::string getBrand(void) { return brand; }
-        void setBrand(std::string brand) { this->brand = brand; }
-        int getYear(void) { return year; }
-        void setYear(int year) { this->year = year; }
-        std::string getPlateNumber(void) { return plate_number; }
-        void setPlateNumber(std::string plate) { this->plate_number = plate; }
-        void printVanInfo(void);
+        std::string getBrand() { return brand; }
+        void setBrand(std::string brand_) { this->brand = std::move(brand_); }
+        int getYear() const { return year; }
+        void setYear(int year_) { this->year = year_; }
+        std::string getPlateNumber() const { return plate_number; }
+        void setPlateNumber(std::string plate_) { this->plate_number = std::move(plate_); }
+        void printVanInfo();
 
       private:
         std::string brand;
@@ -25,7 +26,7 @@ namespace van {
         bool is_rented{false};
     };
 
-    std::vector<Van> loadVansFromFile(std::string file_name, const char delimiter);
+    std::vector<Van> loadVansFromFile(const std::string& file_name, char delimiter);
     void printVansFromDB(std::vector<Van> vans_db);
     std::vector<Van> createVanDb(const std::vector<std::string>& raw_row);
 } // namespace van

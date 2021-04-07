@@ -3,7 +3,11 @@
 #include <iostream>
 
 namespace utils {
+    void clear_console() {
+        std::cout << "\x1B[2J\x1B[H";
+    }
     void menu(void) {
+        utils::clear_console();
         std::cout << "\n\n";
         std::cout << " *******************************" << std::endl;
         std::cout << " ** MarbeVan Managment System **" << std::endl;
@@ -20,7 +24,7 @@ namespace utils {
             switch(sel) {
                 case '1':
                     std::cout << "** List Vans in database **";
-                    Van::list_vans();
+                    // Van::list_vans();
                     break;
                 case '2':
                     std::cout << "** Delete Van **";
@@ -30,6 +34,7 @@ namespace utils {
                     break;
                 default:
                     std::cout << "** Not Applicable... **";
+                    utils::clear_console();
                     utils::menu();
                     break;
             }

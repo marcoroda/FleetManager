@@ -5,12 +5,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 
 namespace van {
     Van::Van(std::string brand, int year, std::string plate_number)
-        : brand(brand), year(year), plate_number(plate_number) {
+        : brand(std::move(brand)), year(year), plate_number(std::move(plate_number)) {
         // std::cout << "Custom Ctor used!!" << std::endl;
     }
 
@@ -20,8 +21,7 @@ namespace van {
         std::cout << "\n";
     }
 
-    // D:\Projs_Work_Nerd_Stuff\DumpMe\CMakeMarbeVan\src\vans_database.csv
-    std::vector<Van> loadVansFromFile(std::string file_name, const char delimiter) {
+    std::vector<Van> loadVansFromFile(const std::string& file_name, char delimiter) {
         std::cout << "\n\nLoading Vans from " << file_name << "... " << std::endl;
 
         std::ifstream my_file(file_name);
@@ -41,7 +41,6 @@ namespace van {
             }
         }
 
-        // TODO(mroda): Replace by a lambda expression!!
         auto nbr_vans = raw_row.size() / van::nbr_fields_p_van;
         std::cout << nbr_vans << " loaded vans from .csv file." << std::endl;
         // Create vector <Van> with loaded Vans
@@ -67,7 +66,7 @@ namespace van {
             std::string brand = raw_row.at(i);
             int year = std::stoi(raw_row.at(i + 1));
             std::string plate_number = raw_row.at(i + 2);
-            van_db.push_back(Van(brand, year, plate_number));
+            van_db.emplace_back(brand, year, plate_number);
         }
 
         return van_db;
