@@ -45,8 +45,15 @@ target_link_libraries(fleetmanager_lib
         mongo::bsoncxx_shared
         mongo::mongocxx_shared)
 
+# wxWidgets GUI
 add_executable(wx_fleetManager wx_main.cpp)
 target_link_libraries(wx_fleetManager
+        PRIVATE
+        fleetmanager_lib)
+
+# ImGUI GUI
+add_executable(imgui_fleetManager imgui_main.cpp)
+target_link_libraries(imgui_fleetManager
         PRIVATE
         fleetmanager_lib)
 

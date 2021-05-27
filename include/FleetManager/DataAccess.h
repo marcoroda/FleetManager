@@ -10,11 +10,6 @@
 
 namespace Data {
 
-enum class DBOp {
-    OK,
-    NOK,
-};
-
 class DataAccess {
 public:
     DataAccess(const mongocxx::database& db, std::string collection_name)
@@ -24,13 +19,17 @@ public:
         m_collection = db[m_collection_name];
     }
 
-    DBOp add_van(const Rentable::Van& van);
-    DBOp delete_van(const Rentable::Van& van);
+    enum class DBOp {
+        OK,
+        NOK,
+    };
+
+    [[nodiscard]] DBOp add_van(const Rentable::Van& van);
+    [[nodiscard]] DBOp delete_van(const Rentable::Van& van);
 
 private:
     mongocxx::database m_db;
     mongocxx::collection m_collection;
     std::string m_collection_name;
 };
-
 }

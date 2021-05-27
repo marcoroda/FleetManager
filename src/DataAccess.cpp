@@ -15,26 +15,24 @@ using bsoncxx::builder::stream::open_document;
 
 namespace Data {
 
-DBOp DataAccess::add_van(const Rentable::Van& van)
+DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
 {
     std::cout << "Adding Van to DB: " << m_db.name() << " and Collection: " << m_collection_name << "\n";
 
     auto builder = document {};
     bsoncxx::document::value doc_value = builder
-        << "name"
-        << "MongoDB"
-        << "type"
-        << "database"
-        << "count" << 1
-        << "versions" << bsoncxx::builder::stream::open_array
-        << "v3.2"
-        << "v3.0"
-        << "v2.6"
-        << close_array
-        << "info" << bsoncxx::builder::stream::open_document
-        << "x" << 203
-        << "y" << 102
-        << bsoncxx::builder::stream::close_document
+        << "Brand"
+        << van.brand()
+        << "Model"
+        << van.model()
+        << "PlateNumber"
+        << van.plate_number()
+        << "HP"
+        << van.hp()
+        << "Year"
+        << van.year()
+        << "NumberDoors"
+        << van.doors()
         << bsoncxx::builder::stream::finalize;
 
     bsoncxx::stdx::optional<mongocxx::result::insert_one> result = m_collection.insert_one(doc_value.view());
@@ -43,14 +41,13 @@ DBOp DataAccess::add_van(const Rentable::Van& van)
     for (auto& doc : cursor) {
         std::cout << bsoncxx::to_json(doc) << "\n";
     }
-
-    return Data::DBOp::OK;
+    return DataAccess::DBOp::OK;
 }
 
-DBOp DataAccess::delete_van(const Rentable::Van& van)
+DataAccess::DBOp DataAccess::delete_van(const Rentable::Van& van)
 {
     std::cout << "Deleting Van from DB: " << m_db.name() << " and Collection: " << m_collection_name << "\n";
-    return Data::DBOp::OK;
+    return DataAccess::DBOp::OK;
 }
 
 }

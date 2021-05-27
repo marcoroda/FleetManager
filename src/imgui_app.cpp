@@ -1,4 +1,6 @@
+#include <FleetManager/Van.h>
 #include <FleetManager/imgui_app.h>
+#include <array>
 #include <imgui.h>
 
 namespace GUI {
@@ -60,6 +62,25 @@ void ShowExampleMenuFile()
     }
     if (ImGui::MenuItem("Checked", nullptr, true)) { }
     if (ImGui::MenuItem("Quit", "Alt+F4")) { }
+}
+Rentable::Van show_add_van()
+{
+    ImGui::Begin("Add to Database");
+    static std::array<char, 15> brand { "Brand" };
+    static std::array<char, 15> model { "Model" };
+    static int year = 2018;
+    static std::array<char, 20> plate_number { "4248 JXX" };
+    static int hp = 2018;
+    static int nbr_doors = 2018;
+
+    ImGui::InputText("Insert Brand", brand.data(), brand.size());
+    ImGui::InputText("Insert Model", model.data(), model.size());
+    ImGui::InputInt("Insert Year of Manufacture", &year, 1, 100);
+    ImGui::InputText("Insert Plate Number", plate_number.data(), plate_number.size());
+    ImGui::InputInt("Insert HP", &hp, 1, 1000);
+    ImGui::InputInt("Insert Number of Doors", &nbr_doors, 1, 100);
+
+    return Rentable::Van{brand.data(), model.data(), year, plate_number.data(), hp, nbr_doors};
 }
 
 }

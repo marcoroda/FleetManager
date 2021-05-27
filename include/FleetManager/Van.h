@@ -35,6 +35,8 @@ public:
     [[nodiscard]] int doors() const { return m_doors; }
     void set_doors(const int& doors) { m_doors = doors; }
 
+    void print_van_info() const;
+
     virtual double calc_rental_fee(const int& days, const int& cat, const std::string& type_rentable) override;
 private:
     std::string m_brand;
@@ -52,6 +54,4 @@ private:
     //        Insurance m_insurance_name;
     //        Date m_last_insurance_date;
 };
-
-static void print_van_info(const Van&);
 } // namespace van
