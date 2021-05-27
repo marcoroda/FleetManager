@@ -38,7 +38,7 @@ int main()
 
         ImGui::Begin("Menu");
         if (ImGui::BeginMenu("Menu")) {
-            GUI::ShowExampleMenuFile();
+//            GUI::ShowExampleMenuFile();
             ImGui::EndMenu();
         }
         static int output_dest = 0;
@@ -80,9 +80,7 @@ int main()
             data_access.add_van(my_van);
         }
 
-
         ImGui::End();
-
 
         window.clear();
         ImGui::SFML::Render(window);

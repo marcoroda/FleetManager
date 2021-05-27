@@ -17,7 +17,14 @@ int main()
     sf::RenderWindow window(sf::VideoMode(GUI::WIDTH, GUI::HEIGHT), "FleetManager Application");
     window.setFramerateLimit(60);
 
-    ImGui::SFML::Init(window);
+    ImGui::SFML::Init(window, false);
+
+    // Load Fonts
+    ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-R.ttf", 19.f);
+    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-B.ttf", 21.f);
+    ImGui::SFML::UpdateFontTexture();
 
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -33,18 +40,22 @@ int main()
         ImGui::SFML::Update(window, deltaClock.restart());
 
         ImGui::Begin("Hello, world!");
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         ImGui::Button("Look at this pretty button");
+        ImGui::PopFont();
         ImGui::End();
 
         auto added_van = GUI::show_add_van();
-
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         if (ImGui::Button("Add Van")) {
             added_van.print_van_info();
             auto data_access = Data::DataAccess { db, "my_vans" };
             if (data_access.add_van(added_van) != Data::DataAccess::DBOp::OK)
                 return EXIT_FAILURE;
         }
-
+        ImGui::PopFont();
         ImGui::End();
 
         window.clear();

@@ -13,7 +13,7 @@ set(CONAN_EXTRA_OPTIONS "")
 
 if (CPP_STARTER_USE_IMGUI)
     set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} imgui-sfml/2.1@bincrafters/stable)
-    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} imgui/1.80)
+#    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} imgui/1.80)
 endif ()
 
 include(cmake/Conan.cmake)
