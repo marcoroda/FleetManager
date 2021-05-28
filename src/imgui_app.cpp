@@ -1,7 +1,10 @@
+#include <FleetManager/DataAccess.h>
 #include <FleetManager/Van.h>
 #include <FleetManager/imgui_app.h>
 #include <array>
 #include <imgui.h>
+#include <iostream>
+#include <mongocxx/cursor.hpp>
 
 namespace GUI {
 
@@ -66,13 +69,12 @@ namespace GUI {
 
 Rentable::Van show_add_van()
 {
-    ImGui::Begin("Add to Database");
-    static std::array<char, 15> brand { "Brand" };
-    static std::array<char, 15> model { "Model" };
-    static int year = 2018;
-    static std::array<char, 20> plate_number { "4248 JXX" };
-    static int hp = 2018;
-    static int nbr_doors = 2018;
+    static std::array<char, 15> brand { "Opel" };
+    static std::array<char, 15> model { "Zafira" };
+    static int year { 2020 };
+    static std::array<char, 20> plate_number { "4148 JXX" };
+    static int hp { 110 };
+    static int nbr_doors { 5 };
 
     ImGui::InputText("Insert Brand", brand.data(), brand.size());
     ImGui::InputText("Insert Model", model.data(), model.size());
@@ -80,8 +82,7 @@ Rentable::Van show_add_van()
     ImGui::InputText("Insert Plate Number", plate_number.data(), plate_number.size());
     ImGui::InputInt("Insert HP", &hp, 1, 1000);
     ImGui::InputInt("Insert Number of Doors", &nbr_doors, 1, 100);
-
-    return Rentable::Van{brand.data(), model.data(), year, plate_number.data(), hp, nbr_doors};
+    return Rentable::Van { brand.data(), model.data(), year, plate_number.data(), hp, nbr_doors };
 }
 
 }

@@ -37,7 +37,8 @@ public:
 
     void print_van_info() const;
 
-    virtual double calc_rental_fee(const int& days, const int& cat, const std::string& type_rentable) override;
+    double calc_rental_fee(const int& days, const int& cat, const std::string& type_rentable) override;
+
 private:
     std::string m_brand;
     std::string m_model;

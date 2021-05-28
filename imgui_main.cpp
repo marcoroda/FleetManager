@@ -6,6 +6,7 @@
 #include <SFML/Window/Event.hpp>
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <iostream>
 
 int main()
 {
@@ -19,11 +20,13 @@ int main()
 
     ImGui::SFML::Init(window, false);
 
+    static bool btn_st_add_van { false };
+
     // Load Fonts
     ImGuiIO& io = ImGui::GetIO();
     io.Fonts->Clear();
-    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-R.ttf", 19.f);
-    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-B.ttf", 21.f);
+    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-R.ttf", 19.f); // regular
+    io.Fonts->AddFontFromFileTTF("../../resources/Ubuntu-B.ttf", 21.f); // bold
     ImGui::SFML::UpdateFontTexture();
 
     sf::Clock deltaClock;
@@ -36,26 +39,28 @@ int main()
                 window.close();
             }
         }
-
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGui::Begin("Hello, world!");
-        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-        ImGui::Button("Look at this pretty button");
-        ImGui::PopFont();
-        ImGui::End();
-
+        ImGui::Begin("Add to Database");
         auto added_van = GUI::show_add_van();
-        ImGui::Spacing();
-        ImGui::Spacing();
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-        if (ImGui::Button("Add Van")) {
+        for (int nbr_spacing = 0; nbr_spacing < 3; ++nbr_spacing)
+            ImGui::Spacing();
+        btn_st_add_van = ImGui::Button("Add Van");
+        ImGui::PopFont();
+        if (btn_st_add_van) {
             added_van.print_van_info();
             auto data_access = Data::DataAccess { db, "my_vans" };
-            if (data_access.add_van(added_van) != Data::DataAccess::DBOp::OK)
-                return EXIT_FAILURE;
+            if (data_access.add_van(added_van) != Data::DataAccess::DBOp::OK) {
+                std::cout << "Van already exist in the Database! \n";
+            }
+            data_access.list_all();
         }
-        ImGui::PopFont();
+        ImGui::End();
+
+        ImGui::Begin("My Vans");
+        //        auto data_access = Data::DataAccess {db, "my_vans"};
+        //        data_access.list_all();
         ImGui::End();
 
         window.clear();

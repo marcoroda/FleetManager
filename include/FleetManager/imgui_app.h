@@ -8,4 +8,5 @@ constexpr unsigned int HEIGHT = 800;
 
 //void ShowExampleMenuFile();
 Rentable::Van show_add_van();
+void show_my_vans(const mongocxx::database& db, const std::string& collection);
 }

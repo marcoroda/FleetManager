@@ -24,8 +24,11 @@ public:
         NOK,
     };
 
+    [[nodiscard]] mongocxx::collection collection() const { return m_collection; }
     [[nodiscard]] DBOp add_van(const Rentable::Van& van);
     [[nodiscard]] DBOp delete_van(const Rentable::Van& van);
+    [[nodiscard]] bool exists_van(const Rentable::Van& van);
+    void list_all();
 
 private:
     mongocxx::database m_db;

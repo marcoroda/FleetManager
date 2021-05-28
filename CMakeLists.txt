@@ -33,7 +33,7 @@ add_library(fleetmanager_lib
         src/utils.cpp
         src/Van.cpp
         src/DataAccess.cpp
-        src/app.cpp
+        src/wx_app.cpp
         src/imgui_app.cpp)
 target_include_directories(fleetmanager_lib
         PUBLIC

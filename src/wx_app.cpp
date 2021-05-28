@@ -1,4 +1,4 @@
-#include <FleetManager/app.h>
+#include <FleetManager/wx_app.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 
