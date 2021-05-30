@@ -38,7 +38,7 @@ DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
     if (!exists_van(van)) {
         bsoncxx::stdx::optional<mongocxx::result::insert_one> result = m_collection.insert_one(doc_value.view());
     } else {
-        return DataAccess::DBOp::NOK;
+        return DataAccess::DBOp::EXISTS;
     }
 
     return DataAccess::DBOp::OK;

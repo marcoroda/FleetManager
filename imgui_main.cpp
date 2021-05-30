@@ -4,7 +4,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
-#include <fmt/format.h>
 #include <imgui-SFML.h>
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -21,6 +20,12 @@ int main()
     window.setFramerateLimit(60);
 
     ImGui::SFML::Init(window, false);
+
+    sf::Color bg_color;
+    float color[3] = { 0.22f, 0.22f, 0.13f };
+    bg_color.r = static_cast<sf::Uint8>(color[0] * 255.f);
+    bg_color.g = static_cast<sf::Uint8>(color[1] * 255.f);
+    bg_color.b = static_cast<sf::Uint8>(color[2] * 255.f);
 
     static bool my_tool_active { false };
     static bool btn_st_add_van { false };
@@ -45,6 +50,14 @@ int main()
         }
         ImGui::SFML::Update(window, deltaClock.restart());
 
+        ImGui::Begin("Set Background Color");
+        if (ImGui::ColorEdit3("Background color", color)) {
+            bg_color.r = static_cast<sf::Uint8>(color[0] * 255.f);
+            bg_color.g = static_cast<sf::Uint8>(color[1] * 255.f);
+            bg_color.b = static_cast<sf::Uint8>(color[2] * 255.f);
+        }
+        ImGui::End();
+
         ImGui::Begin("Add to Database");
         auto added_van = GUI::show_add_van();
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
@@ -64,29 +77,11 @@ int main()
         ImGui::Checkbox("Check to Show Current Vans in Database", &show_current_vans);
         if (show_current_vans) {
             auto data = Data::DataAccess { db, "my_vans" };
-            GUI::show_all_vans(data, "");
+            GUI::show_all_vans(data, "collection: my_vans");
         }
-
         ImGui::End();
 
-        //        ImGui::Begin("Vans in Database");
-        //        static bool test_window = false;
-        //        ImGui::Checkbox("Hovered/Active tests after Begin() for title bar testing", &test_window);
-        //        if (test_window) {
-        //            ImGui::Begin("Title bar Hovered/Active tests", &test_window);
-        //            if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
-        //            {
-        //                if (ImGui::MenuItem("Close")) {
-        //                    test_window = false;
-        //                }
-        //                ImGui::EndPopup();
-        //            }
-        //            GUI::show_all_vans(data, "my");
-        //            ImGui::End();
-        //        }
-        //        ImGui::End();
-
-        window.clear();
+        window.clear(bg_color);
         ImGui::SFML::Render(window);
         window.display();
     }

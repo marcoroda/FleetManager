@@ -27,9 +27,9 @@ Rentable::Van show_add_van()
     return Rentable::Van { brand.data(), model.data(), year, plate_number.data(), hp, nbr_doors };
 }
 
-void show_all_vans(const Data::DataAccess& data, const std::string& prefix)
+void show_all_vans(const Data::DataAccess& data, const std::string& suffix)
 {
-    std::string s = fmt::format("{} Current Added Vans to DB.", prefix);
+    std::string s = fmt::format("Current Added Vans to DB {}", suffix);
     ImGui::Begin(s.data());
     mongocxx::cursor cursor = data.collection().find({});
     static bool selected = false;

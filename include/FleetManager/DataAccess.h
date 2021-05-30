@@ -22,6 +22,7 @@ public:
     enum class DBOp {
         OK,
         NOK,
+        EXISTS,
     };
 
     [[nodiscard]] mongocxx::collection collection() const { return m_collection; }
