@@ -43,7 +43,8 @@ target_link_libraries(fleetmanager_lib
         ${wxWidgets_LIBRARIES}
         CONAN_PKG::imgui-sfml
         mongo::bsoncxx_shared
-        mongo::mongocxx_shared)
+        mongo::mongocxx_shared
+        CONAN_PKG::fmt)
 
 # wxWidgets GUI
 add_executable(wx_fleetManager wx_main.cpp)

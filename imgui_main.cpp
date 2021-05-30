@@ -4,8 +4,10 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
+#include <fmt/format.h>
 #include <imgui-SFML.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <iostream>
 
 int main()
@@ -20,7 +22,9 @@ int main()
 
     ImGui::SFML::Init(window, false);
 
+    static bool my_tool_active { false };
     static bool btn_st_add_van { false };
+    static bool show_current_vans { false };
 
     // Load Fonts
     ImGuiIO& io = ImGui::GetIO();
@@ -56,12 +60,31 @@ int main()
             }
             data_access.list_all();
         }
+
+        ImGui::Checkbox("Check to Show Current Vans in Database", &show_current_vans);
+        if (show_current_vans) {
+            auto data = Data::DataAccess { db, "my_vans" };
+            GUI::show_all_vans(data, "");
+        }
+
         ImGui::End();
 
-        ImGui::Begin("My Vans");
-        //        auto data_access = Data::DataAccess {db, "my_vans"};
-        //        data_access.list_all();
-        ImGui::End();
+        //        ImGui::Begin("Vans in Database");
+        //        static bool test_window = false;
+        //        ImGui::Checkbox("Hovered/Active tests after Begin() for title bar testing", &test_window);
+        //        if (test_window) {
+        //            ImGui::Begin("Title bar Hovered/Active tests", &test_window);
+        //            if (ImGui::BeginPopupContextItem()) // <-- This is using IsItemHovered()
+        //            {
+        //                if (ImGui::MenuItem("Close")) {
+        //                    test_window = false;
+        //                }
+        //                ImGui::EndPopup();
+        //            }
+        //            GUI::show_all_vans(data, "my");
+        //            ImGui::End();
+        //        }
+        //        ImGui::End();
 
         window.clear();
         ImGui::SFML::Render(window);

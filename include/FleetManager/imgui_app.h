@@ -6,7 +6,6 @@ namespace GUI {
 constexpr unsigned int WIDTH = 1500;
 constexpr unsigned int HEIGHT = 800;
 
-//void ShowExampleMenuFile();
 Rentable::Van show_add_van();
-void show_my_vans(const mongocxx::database& db, const std::string& collection);
+void show_all_vans(const Data::DataAccess &data, const std::string& prefix);
 }

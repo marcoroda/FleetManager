@@ -46,7 +46,7 @@ private:
     int m_hp {};
     int m_year {};
     int m_doors {};
-    //        bool m_is_rented;
+    bool m_is_rented { false };
     //        int cat;
     //        int m_status;
     //        bool m_has_gps;
