@@ -14,17 +14,14 @@ set(CONAN_EXTRA_OPTIONS "")
 # Dear ImGui SFML
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} imgui-sfml/2.1@bincrafters/stable)
 
-include(cmake/Conan.cmake)
-run_conan()
+# Mongo CXX drivers
+set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} mongo-cxx-driver/3.6.2)
 
 # wxWidgets
-find_package(wxWidgets REQUIRED COMPONENTS core base)
-include("${wxWidgets_USE_FILE}")
+set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} wxwidgets/3.1.4@bincrafters/stable)
 
-# Mongo
-find_package(mongocxx REQUIRED)
-find_package(bsoncxx REQUIRED)
-
+include(cmake/Conan.cmake)
+run_conan()
 
 add_library(fleetmanager_lib
         STATIC
@@ -38,10 +35,9 @@ target_include_directories(fleetmanager_lib
         include)
 target_link_libraries(fleetmanager_lib
         PUBLIC
-        ${wxWidgets_LIBRARIES}
+        CONAN_PKG::wxwidgets
         CONAN_PKG::imgui-sfml
-        mongo::bsoncxx_shared
-        mongo::mongocxx_shared
+        CONAN_PKG::mongo-cxx-driver
         CONAN_PKG::fmt)
 
 # wxWidgets GUI

@@ -30,6 +30,7 @@ int main()
     static bool my_tool_active { false };
     static bool btn_st_add_van { false };
     static bool show_current_vans { false };
+    static bool show_current_rented_vans { false };
 
     // Load Fonts
     ImGuiIO& io = ImGui::GetIO();
@@ -80,6 +81,18 @@ int main()
             GUI::show_all_vans(data, "collection: my_vans");
         }
         ImGui::End();
+
+//        ImGui::Begin("Rent Van");
+//        char *array = {"One, good, thing, about, music"};
+//        int item;
+//        ImGui::Combo("Vans", &item, array);
+
+//        ImGui::Checkbox("Check to Show Current rented Vans", &show_current_rented_vans);
+//        if (show_current_rented_vans) {
+//            auto data = Data::DataAccess { db, "rented_vans" };
+//            GUI::show_all_vans(data, "collection: rented_vans");
+//        }
+//        ImGui::End();
 
         window.clear(bg_color);
         ImGui::SFML::Render(window);
