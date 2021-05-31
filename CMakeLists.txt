@@ -14,11 +14,11 @@ set(CONAN_EXTRA_OPTIONS "")
 # Dear ImGui SFML
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} imgui-sfml/2.1@bincrafters/stable)
 
-# Mongo CXX drivers
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} mongo-cxx-driver/3.6.2)
-
 # wxWidgets
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} wxwidgets/3.1.4@bincrafters/stable)
+
+# Mongo CXX drivers
+set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} mongo-cxx-driver/3.6.2)
 
 include(cmake/Conan.cmake)
 run_conan()
@@ -38,7 +38,8 @@ target_link_libraries(fleetmanager_lib
         CONAN_PKG::wxwidgets
         CONAN_PKG::imgui-sfml
         CONAN_PKG::mongo-cxx-driver
-        CONAN_PKG::fmt)
+        CONAN_PKG::fmt
+        CONAN_PKG::spdlog)
 
 # wxWidgets GUI
 add_executable(wx_fleetManager wx_main.cpp)
