@@ -1,10 +1,11 @@
 #include <FleetManager/DataAccess.h>
-#include <bsoncxx/builder/stream/array.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/helpers.hpp>
 #include <bsoncxx/json.hpp>
+#include <fmt/format.h>
 #include <iostream>
 #include <mongocxx/client.hpp>
+#include <spdlog/spdlog.h>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -17,8 +18,7 @@ namespace Data {
 
 DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
 {
-    std::cout << "Adding Van to DB: " << m_db.name() << " and Collection: " << m_collection_name << "\n";
-
+    spdlog::info(fmt::format("Adding Van to DB: {} and Collection: {}", m_db.name().to_string(), m_collection_name));
     auto builder = document {};
     bsoncxx::document::value doc_value = builder
         << "Brand"
@@ -62,7 +62,6 @@ bool DataAccess::exists_van(const Rentable::Van& van)
         << finalize);
 
     if (maybe_result) {
-        std::cout << bsoncxx::to_json(*maybe_result) << "\n";
         return true;
     }
     return false;
@@ -71,10 +70,8 @@ bool DataAccess::exists_van(const Rentable::Van& van)
 void DataAccess::list_all()
 {
     mongocxx::cursor cursor = m_collection.find({});
-    std::cout << "\n\n"
-              << "Listing all Vans on " << m_collection_name << "\n";
     for (auto& doc : cursor) {
-        std::cout << bsoncxx::to_json(doc) << "\n";
+        spdlog::info(bsoncxx::to_json(doc));
     }
 }
 

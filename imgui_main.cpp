@@ -8,11 +8,16 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <iostream>
+#include "spdlog/spdlog.h"
+#include <fmt/format.h>
 
 int main()
 {
     mongocxx::instance instance {}; // This should be done only once.
-    mongocxx::uri uri("mongodb://localhost:27017");
+    std::string uri_db{"mongodb://localhost:27017"};
+    spdlog::info(fmt::format("Trying to connect to DB at {}", uri_db));
+    mongocxx::uri uri(uri_db);
+    spdlog::info(fmt::format("Successfully connected to DB at {}", uri_db));
     mongocxx::client client(uri);
     mongocxx::database db = client["mydb"];
 
@@ -69,9 +74,9 @@ int main()
         if (btn_st_add_van) {
             added_van.print_van_info();
             auto data_access = Data::DataAccess { db, "my_vans" };
-            if (data_access.add_van(added_van) != Data::DataAccess::DBOp::OK) {
-                std::cout << "Van already exist in the Database! \n";
-            }
+            if (data_access.add_van(added_van) != Data::DataAccess::DBOp::OK)
+                spdlog::info("Van already exist in the Database!");
+
             data_access.list_all();
         }
 
