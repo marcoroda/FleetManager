@@ -16,7 +16,7 @@ using bsoncxx::builder::stream::open_document;
 
 namespace Data {
 
-DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
+DataAccess::DBOp DataAccess::add(const Rentable::Van& van)
 {
     spdlog::info(fmt::format("Adding Van to DB: {} and Collection: {}", m_db.name().to_string(), m_collection_name));
     auto builder = document {};
@@ -33,9 +33,25 @@ DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
         << van.year()
         << "NumberDoors"
         << van.doors()
+        << "IsRented"
+        << van.is_rented()
+        << "Cat"
+        << van.cat()
+        << "GPS"
+        << van.has_gps()
+        << "LastITV"
+//        << van.last_ITV()
+        << "2021-04-12"
+        << "IsAccidentReady"
+        << van.is_accident_ready()
+        << "InsuranceName"
+        << van.insurance_name()
+        << "LastInsurance"
+//        << van.last_insurance_date()
+        << "2021-04-12"
         << bsoncxx::builder::stream::finalize;
 
-    if (!exists_van(van)) {
+    if (!exists(van)) {
         bsoncxx::stdx::optional<mongocxx::result::insert_one> result = m_collection.insert_one(doc_value.view());
     } else {
         return DataAccess::DBOp::EXISTS;
@@ -44,21 +60,16 @@ DataAccess::DBOp DataAccess::add_van(const Rentable::Van& van)
     return DataAccess::DBOp::OK;
 }
 
-DataAccess::DBOp DataAccess::delete_van(const Rentable::Van& van)
+DataAccess::DBOp DataAccess::remove(const Rentable::Van& van)
 {
     std::cout << "Deleting Van from DB: " << m_db.name() << " and Collection: " << m_collection_name << "\n";
     return DataAccess::DBOp::OK;
 }
 
-bool DataAccess::exists_van(const Rentable::Van& van)
+bool DataAccess::exists(const Rentable::Van& van)
 {
     bsoncxx::stdx::optional<bsoncxx::document::value> maybe_result = m_collection.find_one(document {}
-        << "Brand" << van.brand()
-        << "Model" << van.model()
         << "PlateNumber" << van.plate_number()
-        << "HP" << van.hp()
-        << "Year" << van.year()
-        << "NumberDoors" << van.doors()
         << finalize);
 
     if (maybe_result) {
@@ -73,6 +84,27 @@ void DataAccess::list_all()
     for (auto& doc : cursor) {
         spdlog::info(bsoncxx::to_json(doc));
     }
+
+    // Create the query filter
+    auto filter = document{} << "PlateNumber"
+                             << "4145 JXX" << finalize;
+
+    // Create the find options with the projection
+    mongocxx::options::find opts{};
+    opts.projection(document{} << "PlateNumber" << 1 << finalize);
+
+
+    // Execute find with options
+    auto cursor_2 = m_collection.find(filter.view(), opts);
+    for (auto &&doc : cursor_2) {
+        std::cout << bsoncxx::to_json(doc) << std::endl;
+    }
+
+}
+std::vector<std::string> DataAccess::get_available_for_renting()
+{
+    std::vector<std::string> my_available_vans {"AAA", "BBB", "DDD"};
+    return my_available_vans;
 }
 
 }

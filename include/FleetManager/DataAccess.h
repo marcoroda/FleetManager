@@ -26,9 +26,10 @@ public:
     };
 
     [[nodiscard]] mongocxx::collection collection() const { return m_collection; }
-    [[nodiscard]] DBOp add_van(const Rentable::Van& van);
-    [[nodiscard]] DBOp delete_van(const Rentable::Van& van);
-    [[nodiscard]] bool exists_van(const Rentable::Van& van);
+    [[nodiscard]] DBOp add(const Rentable::Van& van);
+    [[nodiscard]] DBOp remove(const Rentable::Van& van);
+    [[nodiscard]] bool exists(const Rentable::Van& van);
+    [[nodiscard]] std::vector<std::string> get_available_for_renting();
     void list_all();
 
 private:

@@ -12,6 +12,7 @@ void Van::print_van_info() const
     std::cout << "Year: " << m_year << ", ";
     std::cout << "HP: " << m_hp << ", ";
     std::cout << "Doors: " << m_doors << "\n";
+    std::cout << "Is Rented: " << m_is_rented << "\n";
 }
 
 double Van::calc_rental_fee(const int& days, const int& cat, const std::string& type_rentable)
