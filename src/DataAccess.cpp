@@ -2,6 +2,7 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/helpers.hpp>
 #include <bsoncxx/json.hpp>
+#include <bsoncxx/stdx/string_view.hpp>
 #include <fmt/format.h>
 #include <iostream>
 #include <mongocxx/client.hpp>
@@ -40,14 +41,14 @@ DataAccess::DBOp DataAccess::add(const Rentable::Van& van)
         << "GPS"
         << van.has_gps()
         << "LastITV"
-//        << van.last_ITV()
+        //        << van.last_ITV()
         << "2021-04-12"
         << "IsAccidentReady"
         << van.is_accident_ready()
         << "InsuranceName"
         << van.insurance_name()
         << "LastInsurance"
-//        << van.last_insurance_date()
+        //        << van.last_insurance_date()
         << "2021-04-12"
         << bsoncxx::builder::stream::finalize;
 
@@ -84,26 +85,21 @@ void DataAccess::list_all()
     for (auto& doc : cursor) {
         spdlog::info(bsoncxx::to_json(doc));
     }
-
-    // Create the query filter
-    auto filter = document{} << "PlateNumber"
-                             << "4145 JXX" << finalize;
-
-    // Create the find options with the projection
-    mongocxx::options::find opts{};
-    opts.projection(document{} << "PlateNumber" << 1 << finalize);
-
-
-    // Execute find with options
-    auto cursor_2 = m_collection.find(filter.view(), opts);
-    for (auto &&doc : cursor_2) {
-        std::cout << bsoncxx::to_json(doc) << std::endl;
-    }
-
 }
 std::vector<std::string> DataAccess::get_available_for_renting()
 {
-    std::vector<std::string> my_available_vans {"AAA", "BBB", "DDD"};
+    std::vector<std::string> my_available_vans {};
+
+    auto filter_available_vans = document {} << "IsRented"
+                                             << false
+                                             << finalize;
+    auto cursor = m_collection.find(filter_available_vans.view());
+    for (auto&& doc : cursor) {
+        bsoncxx::stdx::string_view view = doc["PlateNumber"].get_utf8().value;
+        std::string plate_number = view.to_string();
+        my_available_vans.emplace_back(plate_number);
+    }
+
     return my_available_vans;
 }
 

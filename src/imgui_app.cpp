@@ -25,7 +25,7 @@ Rentable::Van show_add_van()
     static std::vector<std::string> has_gps_input { "True", "False" };
     static std::array<char, 11> last_ITV_date_input { "2020-04-12" };
     static std::vector<std::string> is_accident_ready_input { "True", "False" };
-    static std::string last_insurance_date_input { "2020-04-12" };
+    static std::array<char, 11> last_insurance_date_input { "2020-04-12" };
 
     ImGui::PushItemWidth(300);
     ImGui::InputText("Insert Brand", brand_input.data(), brand_input.size());
@@ -60,7 +60,7 @@ Rentable::Van show_add_van()
     Utils::Date last_ITV_date {};
     if (last_ITV_date_str.size() == 10) {
         std::vector<int> input_date = Utils::split(last_ITV_date_str, '-');
-        last_ITV_date = Utils::Date { 2021, 12, 12 };
+        last_ITV_date = Utils::Date { input_date };
     }
 
     static std::string accident_ready = is_accident_ready_input.at(1);
@@ -78,7 +78,7 @@ Rentable::Van show_add_van()
     Utils::Date last_insurance_date {};
     if (last_insurance_date_str.size() == 10) {
         std::vector<int> input_date = Utils::split(last_insurance_date_str, '-');
-        last_insurance_date = Utils::Date { 2021, 12, 12 };
+        last_insurance_date = Utils::Date { input_date };
     }
 
     ImGui::PopItemWidth();
@@ -166,12 +166,13 @@ void rent(const mongocxx::database& db)
     static bool show_current_rented_vans { false };
 
     auto data_access = Data::DataAccess { db, "my_vans" };
-    auto available_vans = data_access.get_available_for_renting();
+    std::vector<std::string> available_vans_plate_number = data_access.get_available_for_renting();
 
-    static std::string current_item = available_vans.at(0);
+    static std::string current_item { "1234 XYZ" };
+
     ImGui::PushItemWidth(200);
     if (ImGui::BeginCombo("Currently Available Vans", current_item.data())) {
-        for (auto& item : available_vans) {
+        for (auto& item : available_vans_plate_number) {
             bool is_selected = (current_item == item); // You can store your selection however you want, outside or inside your objects
             if (ImGui::Selectable(item.data(), is_selected))
                 current_item = item;

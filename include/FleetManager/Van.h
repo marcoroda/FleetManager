@@ -8,6 +8,7 @@ namespace Rentable {
 
 class Van : public IRentable {
 public:
+    Van() = default;
     explicit Van(std::string brand,
         std::string model,
         int year,
