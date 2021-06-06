@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <FleetManager/Utils.h>
+#include "imgui.h"
 
 namespace Utils {
 
@@ -17,6 +18,11 @@ std::vector<int> split(const std::string& str, char delim)
         }
     }
     return result;
+}
+
+void spacing_vertical(const int& nbr_spaces) {
+    for (int spacing = 0; spacing < nbr_spaces; ++spacing)
+        ImGui::Spacing();
 }
 
 } // namespace utils

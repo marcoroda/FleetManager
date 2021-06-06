@@ -30,6 +30,7 @@ public:
     [[nodiscard]] DBOp remove(const Rentable::Van& van);
     [[nodiscard]] bool exists(const Rentable::Van& van);
     [[nodiscard]] std::vector<std::string> get_available_for_renting();
+    [[nodiscard]] Rentable::Van get_by_plate_number(const std::string& item_to_rent);
     void list_all();
 
 private:

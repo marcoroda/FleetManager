@@ -26,6 +26,7 @@ Rentable::Van show_add_van()
     static std::array<char, 11> last_ITV_date_input { "2020-04-12" };
     static std::vector<std::string> is_accident_ready_input { "True", "False" };
     static std::array<char, 11> last_insurance_date_input { "2020-04-12" };
+    static std::vector<std::string> fuel_type_input { "Diesel", "Gasoline", "Electric" };
 
     ImGui::PushItemWidth(300);
     ImGui::InputText("Insert Brand", brand_input.data(), brand_input.size());
@@ -81,13 +82,27 @@ Rentable::Van show_add_van()
         last_insurance_date = Utils::Date { input_date };
     }
 
+    static std::string fuel_type = fuel_type_input.at(1);
+    if (ImGui::BeginCombo("Insert Fuel Type", fuel_type.data())) {
+        for (auto& item : fuel_type_input) {
+            bool is_selected = (fuel_type == item); // You can store your selection however you want, outside or inside your objects
+            if (ImGui::Selectable(item.data(), is_selected))
+                fuel_type = item;
+        }
+        ImGui::EndCombo();
+    }
+
     ImGui::PopItemWidth();
+
+    std::string plate_number { plate_number_input.data() };
+    std::string::iterator end_pos = std::remove(plate_number.begin(), plate_number.end(), ' ');
+    plate_number.erase(end_pos, plate_number.end());
 
     return Rentable::Van {
         brand_input.data(),
         model_input.data(),
         year_input,
-        plate_number_input.data(),
+        plate_number,
         hp_input,
         nbr_doors_input,
         false,
@@ -97,6 +112,7 @@ Rentable::Van show_add_van()
         (accident_ready == "True"),
         "AXA",
         last_insurance_date,
+        fuel_type,
     };
 }
 
@@ -168,34 +184,50 @@ void rent(const mongocxx::database& db)
     auto data_access = Data::DataAccess { db, "my_vans" };
     std::vector<std::string> available_vans_plate_number = data_access.get_available_for_renting();
 
-    static std::string current_item { "1234 XYZ" };
+    static std::string item_to_rent {};
 
     ImGui::PushItemWidth(200);
-    if (ImGui::BeginCombo("Currently Available Vans", current_item.data())) {
+    if (ImGui::BeginCombo("Currently Available Vans", item_to_rent.data())) {
         for (auto& item : available_vans_plate_number) {
-            bool is_selected = (current_item == item); // You can store your selection however you want, outside or inside your objects
+            bool is_selected = (item_to_rent == item); // You can store your selection however you want, outside or inside your objects
             if (ImGui::Selectable(item.data(), is_selected))
-                current_item = item;
+                item_to_rent = item;
         }
         ImGui::EndCombo();
     }
 
-    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
-    for (int nbr_spacing = 0; nbr_spacing < 3; ++nbr_spacing)
-        ImGui::Spacing();
-    btn_st_rent_van = ImGui::Button("Rent Van");
-    ImGui::PopFont();
-    if (btn_st_rent_van) {
-        spdlog::info(fmt::format("Selected Item is: {}", current_item));
+    auto data_access_obj = Data::DataAccess { db, "my_vans" };
+    auto van_to_rent_from_db = data_access_obj.get_by_plate_number(item_to_rent);
+    Utils::spacing_vertical(3);
+    if (!item_to_rent.empty()) {
+        ImGui::Text("%s", fmt::format("Brand: {}", van_to_rent_from_db.brand()).data());
+        ImGui::Text("%s", fmt::format("Model: {}", van_to_rent_from_db.model()).data());
+        ImGui::Text("%s", fmt::format("Number of Doors: {} ", van_to_rent_from_db.doors()).data());
+
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+        for (int nbr_spacing = 0; nbr_spacing < 3; ++nbr_spacing)
+            ImGui::Spacing();
+        btn_st_rent_van = ImGui::Button("Rent Van");
+        ImGui::PopFont();
     }
 
-    ImGui::Checkbox("Show currently rented vans", &show_current_rented_vans);
-    if (show_current_rented_vans) {
-        auto data = Data::DataAccess { db, "rented_vans" };
-        GUI::show_all_vans(data, "collection: rented_vans");
+    if (btn_st_rent_van) {
+        spdlog::info(fmt::format("Selected Item is: {}", item_to_rent));
     }
+
+    //    GUI::show_rent_form(item_to_rent);
+
+    //    ImGui::Checkbox("Show currently rented vans", &show_current_rented_vans);
+    //    if (show_current_rented_vans) {
+    //        auto data = Data::DataAccess { db, "rented_vans" };
+    //        GUI::show_all_vans(data, "collection: rented_vans");
+    //    }
 
     ImGui::PopItemWidth();
+}
+
+void show_rent_form(const std::string& plate_number)
+{
 }
 
 }

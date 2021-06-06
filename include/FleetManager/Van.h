@@ -3,6 +3,7 @@
 #include <FleetManager/Date.h>
 #include <FleetManager/IRentable.h>
 #include <string>
+#include <utility>
 
 namespace Rentable {
 
@@ -21,7 +22,8 @@ public:
         Utils::Date last_ITV,
         bool is_accident_ready,
         std::string insurance_name,
-        Utils::Date last_insurance_date)
+        Utils::Date last_insurance_date,
+        std::string fuel_type)
         : m_brand(std::move(brand))
         , m_model(std::move(model))
         , m_year(year)
@@ -34,7 +36,8 @@ public:
         , m_last_ITV(last_ITV)
         , m_is_accident_ready(is_accident_ready)
         , m_insurance_name(std::move(insurance_name))
-        , m_last_insurance_date(last_insurance_date) {};
+        , m_last_insurance_date(last_insurance_date)
+        , m_fuel_type(std::move(fuel_type)) {};
 
     [[nodiscard]] std::string brand() const { return m_brand; }
     void set_brand(const std::string& brand) { m_brand = brand; }
@@ -50,7 +53,7 @@ public:
     void set_doors(const int& doors) { m_doors = doors; }
     [[nodiscard]] bool is_rented() const { return m_is_rented; }
     void set_is_rented(const bool& is_rented) { m_is_rented = is_rented; }
-    [[nodiscard]] bool cat() const { return m_cat; }
+    [[nodiscard]] int cat() const { return m_cat; }
     void set_cat(const int& cat) { m_cat = cat; }
     [[nodiscard]] bool has_gps() const { return m_has_gps; }
     void set_has_gps(const bool& has_gps) { m_has_gps = has_gps; }
@@ -62,10 +65,12 @@ public:
     void set_insurance_name(const std::string& insurance_name) { m_insurance_name = insurance_name; }
     [[nodiscard]] Utils::Date last_insurance_date() const { return m_last_insurance_date; }
     void set_last_insurance_date(const Utils::Date& date) { m_last_insurance_date = date; }
+    [[nodiscard]] std::string fuel_type() const { return m_fuel_type; }
+    void set_fuel_type(const std::string& fuel_type) { m_fuel_type = fuel_type; }
 
     void print_van_info() const;
 
-    double calc_rental_fee(const int& days, const int& cat, const std::string& type_rentable) override;
+    double calc_rental_fee(const int& days, const int& cat) override;
 
 private:
     std::string m_brand;
@@ -81,6 +86,7 @@ private:
     bool m_is_accident_ready;
     std::string m_insurance_name;
     Utils::Date m_last_insurance_date;
+    std::string m_fuel_type {};
 };
 
 }

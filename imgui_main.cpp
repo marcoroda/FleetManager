@@ -21,12 +21,12 @@ int main()
     mongocxx::database db = client["mydb"];
 
     sf::RenderWindow window(sf::VideoMode(GUI::WIDTH, GUI::HEIGHT), "FleetManager Application");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
 
     ImGui::SFML::Init(window, false);
 
     sf::Color bg_color;
-    float color[3] = { 0.22f, 0.22f, 0.13f };
+    float color[3] = { 0.22f, 0.32f, 0.63f };
     bg_color.r = static_cast<sf::Uint8>(color[0] * 255.f);
     bg_color.g = static_cast<sf::Uint8>(color[1] * 255.f);
     bg_color.b = static_cast<sf::Uint8>(color[2] * 255.f);
@@ -53,13 +53,13 @@ int main()
         }
         ImGui::SFML::Update(window, deltaClock.restart());
 
-        ImGui::Begin("Set Background Color");
-        if (ImGui::ColorEdit3("Background color", color)) {
-            bg_color.r = static_cast<sf::Uint8>(color[0] * 255.f);
-            bg_color.g = static_cast<sf::Uint8>(color[1] * 255.f);
-            bg_color.b = static_cast<sf::Uint8>(color[2] * 255.f);
-        }
-        ImGui::End();
+//        ImGui::Begin("Set Background Color");
+//        if (ImGui::ColorEdit3("Background color", color)) {
+//            bg_color.r = static_cast<sf::Uint8>(color[0] * 255.f);
+//            bg_color.g = static_cast<sf::Uint8>(color[1] * 255.f);
+//            bg_color.b = static_cast<sf::Uint8>(color[2] * 255.f);
+//        }
+//        ImGui::End();
 
         ImGui::Begin("Add Rentable to Database");
         GUI::add_rentable_to_db(db);
