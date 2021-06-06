@@ -70,7 +70,6 @@ int main()
         ImGui::End();
 
 
-
         //        ImGui::Begin("test2");
         //        if (ImGui::TreeNode("Modals")) {
         //            ImGui::TextWrapped("Modal windows are like popups but the user cannot close them by clicking outside the window.");

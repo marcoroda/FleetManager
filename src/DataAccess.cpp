@@ -1,5 +1,6 @@
 #include <FleetManager/DataAccess.h>
 #include <FleetManager/Utils.h>
+#include <algorithm>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/helpers.hpp>
 #include <bsoncxx/json.hpp>
@@ -8,7 +9,6 @@
 #include <iostream>
 #include <mongocxx/client.hpp>
 #include <spdlog/spdlog.h>
-#include <algorithm>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -156,6 +156,43 @@ Rentable::Van DataAccess::get_by_plate_number(const std::string& item_to_rent)
     }
 
     return Rentable::Van {};
+}
+DataAccess::DBOp DataAccess::add_rent_transaction_entry(const Rentable::RentTransaction& rent_transaction)
+{
+    spdlog::info(fmt::format("Adding Rent Transaction to DB: {} and Collection: {}", m_db.name().to_string(), m_collection_name));
+
+    if (rent_transaction.client_name().empty() || rent_transaction.client_DNI().empty() || rent_transaction.days() == 0.0) {
+        return DataAccess::DBOp::NOK;
+    }
+
+    bsoncxx::document::value doc_value = document {}
+        << "PlateNumber"
+        << rent_transaction.plate_number()
+        << "TimeDate"
+        << rent_transaction.time_date()
+        << "TimeHour"
+        << rent_transaction.time_hour()
+        << "Days"
+        << rent_transaction.days()
+        << "ClientName"
+        << rent_transaction.client_name()
+        << "ClientDNI"
+        << rent_transaction.client_DNI()
+        << bsoncxx::builder::stream::finalize;
+
+    bsoncxx::stdx::optional<mongocxx::result::insert_one> insert_result = m_collection.insert_one(doc_value.view());
+
+    mongocxx::collection my_vans_collection = db()["my_vans"];
+    bsoncxx::stdx::optional<mongocxx::result::update> result_update = my_vans_collection.update_one(document {} << "PlateNumber" << rent_transaction.plate_number() << bsoncxx::builder::stream::finalize,
+        document {} << "$set" << open_document << "IsRented" << true << close_document << finalize);
+
+    if (result_update) {
+        spdlog::info("Number of modified docs: {}", result_update->modified_count());
+        return DataAccess::DBOp::OK;
+    }
+
+    else
+        return DataAccess::DBOp::NOK;
 }
 
 }

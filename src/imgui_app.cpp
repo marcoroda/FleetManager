@@ -1,11 +1,15 @@
 #include <FleetManager/DataAccess.h>
 #include <FleetManager/Date.h>
+#include <FleetManager/RentTransaction.h>
 #include <FleetManager/Utils.h>
 #include <FleetManager/Van.h>
 #include <FleetManager/imgui_app.h>
+#include <FleetManager/wx_app.h>
 #include <array>
+#include <chrono>
 #include <fmt/format.h>
 #include <imgui.h>
+#include <iomanip>
 #include <iostream>
 #include <mongocxx/cursor.hpp>
 #include <spdlog/spdlog.h>
@@ -176,6 +180,10 @@ void add_rentable_to_db(const mongocxx::database& db)
     }
 }
 
+void add_rentable_transaction(const mongocxx::database& db, const Rentable::RentTransaction& rent_transaction)
+{
+}
+
 void rent(const mongocxx::database& db)
 {
     static bool btn_st_rent_van { false };
@@ -185,6 +193,10 @@ void rent(const mongocxx::database& db)
     std::vector<std::string> available_vans_plate_number = data_access.get_available_for_renting();
 
     static std::string item_to_rent {};
+    if (available_vans_plate_number.empty())
+        return;
+    else
+        item_to_rent = available_vans_plate_number.at(0);
 
     ImGui::PushItemWidth(200);
     if (ImGui::BeginCombo("Currently Available Vans", item_to_rent.data())) {
@@ -196,26 +208,76 @@ void rent(const mongocxx::database& db)
         ImGui::EndCombo();
     }
 
+    static float days_input { 0 };
+    static std::array<char, 50> client_name_input { "" };
+    static std::array<char, 50> client_DNI_input { "" };
+    static float deposit_input { 0 };
+
     auto data_access_obj = Data::DataAccess { db, "my_vans" };
     auto van_to_rent_from_db = data_access_obj.get_by_plate_number(item_to_rent);
-    Utils::spacing_vertical(3);
+    GUI::spacing_vertical(3);
     if (!item_to_rent.empty()) {
         ImGui::Text("%s", fmt::format("Brand: {}", van_to_rent_from_db.brand()).data());
         ImGui::Text("%s", fmt::format("Model: {}", van_to_rent_from_db.model()).data());
         ImGui::Text("%s", fmt::format("Number of Doors: {} ", van_to_rent_from_db.doors()).data());
+        ImGui::Text("%s", fmt::format("Cat: {} ", van_to_rent_from_db.cat()).data());
+        ImGui::InputFloat("Insert Number of Days", &days_input, 1, 100, "%.1f");
+
+        GUI::spacing_vertical(2);
 
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+        ImGui::Text("%s", fmt::format("Calculated Fee: {} Euros", van_to_rent_from_db.calc_rental_fee(days_input, van_to_rent_from_db.cat())).data());
+        ImGui::PopFont();
+
+        GUI::spacing_vertical(2);
+        ImGui::PushItemWidth(350);
+        ImGui::InputText("Insert Client Name", client_name_input.data(), client_name_input.size());
+        ImGui::InputText("Insert Client DNI", client_DNI_input.data(), client_DNI_input.size());
+        ImGui::PopItemWidth();
+
         for (int nbr_spacing = 0; nbr_spacing < 3; ++nbr_spacing)
             ImGui::Spacing();
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
         btn_st_rent_van = ImGui::Button("Rent Van");
         ImGui::PopFont();
     }
 
     if (btn_st_rent_van) {
         spdlog::info(fmt::format("Selected Item is: {}", item_to_rent));
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        char char_date[100];
+        char char_hour[100];
+        std::strftime(char_date, 100, "%d/%m/%Y", std::localtime(&in_time_t));
+        std::strftime(char_hour, 100, "%T", std::localtime(&in_time_t));
+
+        auto rent_transaction = Rentable::RentTransaction { van_to_rent_from_db.plate_number(), days_input, client_name_input.data(), client_DNI_input.data(), char_date, char_hour };
+        auto rent_transaction_data = Data::DataAccess { db, "rent_transactions" };
+        auto result = rent_transaction_data.add_rent_transaction_entry(rent_transaction);
+        if (result == Data::DataAccess::DBOp::OK) {
+            spdlog::info(fmt::format("Rent Transaction added to DB"));
+            ImGui::OpenPopup("Van Transaction Added Successfully!");
+        } else {
+            ImGui::OpenPopup("Van Transaction Failed!");
+        }
     }
 
-    //    GUI::show_rent_form(item_to_rent);
+    if (ImGui::BeginPopupModal("Van Transaction Added Successfully!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(500, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopupModal("Van Transaction Failed!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Separator();
+        ImGui::Text("Missing added information on mandatory fields!!");
+        if (ImGui::Button("OK", ImVec2(500, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 
     //    ImGui::Checkbox("Show currently rented vans", &show_current_rented_vans);
     //    if (show_current_rented_vans) {
@@ -226,8 +288,9 @@ void rent(const mongocxx::database& db)
     ImGui::PopItemWidth();
 }
 
-void show_rent_form(const std::string& plate_number)
+void spacing_vertical(const int& nbr_spaces)
 {
+    for (int spacing = 0; spacing < nbr_spaces; ++spacing)
+        ImGui::Spacing();
 }
-
 }

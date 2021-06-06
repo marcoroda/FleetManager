@@ -28,7 +28,8 @@ add_library(fleetmanager
         src/DataAccess.cpp
         src/wx_app.cpp
         src/imgui_app.cpp
-        src/Date.cpp)
+        src/Date.cpp
+        src/RentTransaction.cpp)
 target_include_directories(fleetmanager
         PUBLIC
         include)

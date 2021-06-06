@@ -15,9 +15,9 @@ void Van::print_van_info() const
     std::cout << "Is Rented: " << m_is_rented << "\n";
 }
 
-double Van::calc_rental_fee(const int& days, const int& cat)
+float Van::calc_rental_fee(const float& days, const int& cat)
 {
-    return 1.2;
+    return 60 * days * float(cat);
 }
 
 } // namespace Van
