@@ -70,7 +70,7 @@ public:
 
     void print_van_info() const;
 
-    float calc_rental_fee(const float& days, const int& cat) override;
+    double calc_rental_fee(const double& days, const int& cat) override;
 
 private:
     std::string m_brand;

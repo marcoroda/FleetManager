@@ -32,9 +32,11 @@ public:
     [[nodiscard]] DBOp remove(const Rentable::Van& van);
     [[nodiscard]] bool exists(const Rentable::Van& van);
     [[nodiscard]] std::vector<std::string> get_available_for_renting();
-    [[nodiscard]] Rentable::Van get_by_plate_number(const std::string& item_to_rent);
+    [[nodiscard]] Rentable::Van get_van_in_db_by_plate_number(const std::string& item_to_rent);
+    [[nodiscard]] Rentable::RentTransaction get_rented_in_db_by_plate_number(const std::string& item_to_checkout);
+    [[nodiscard]] std::vector<std::string> get_currently_rented();
     void list_all();
-    [[nodiscard]] DBOp add_rent_transaction_entry(const Rentable::RentTransaction& rent_transaction);
+    [[nodiscard]] DBOp add_rent_transaction_entry(const Rentable::RentTransaction& rent_transaction, bool is_check_in);
 
 private:
     mongocxx::database m_db;

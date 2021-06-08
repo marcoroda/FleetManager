@@ -11,11 +11,11 @@ void Van::print_van_info() const
     std::cout << "Plate Number: " << m_plate_number << ", ";
     std::cout << "Year: " << m_year << ", ";
     std::cout << "HP: " << m_hp << ", ";
-    std::cout << "Doors: " << m_doors << "\n";
+    std::cout << "Doors: " << m_doors << ", ";
     std::cout << "Is Rented: " << m_is_rented << "\n";
 }
 
-float Van::calc_rental_fee(const float& days, const int& cat)
+double Van::calc_rental_fee(const double& days, const int& cat)
 {
     return 60 * days * float(cat);
 }

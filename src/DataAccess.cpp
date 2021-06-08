@@ -111,7 +111,7 @@ std::vector<std::string> DataAccess::get_available_for_renting()
     return my_available_vans;
 }
 
-Rentable::Van DataAccess::get_by_plate_number(const std::string& item_to_rent)
+Rentable::Van DataAccess::get_van_in_db_by_plate_number(const std::string& item_to_rent)
 {
     auto filter_vans = document {} << "PlateNumber"
                                    << item_to_rent
@@ -157,7 +157,61 @@ Rentable::Van DataAccess::get_by_plate_number(const std::string& item_to_rent)
 
     return Rentable::Van {};
 }
-DataAccess::DBOp DataAccess::add_rent_transaction_entry(const Rentable::RentTransaction& rent_transaction)
+
+Rentable::RentTransaction DataAccess::get_rented_in_db_by_plate_number(const std::string& item_to_checkout)
+{
+    auto filter_vans = document {} << "PlateNumber"
+                                   << item_to_checkout
+                                   << finalize;
+
+    bsoncxx::stdx::string_view view {};
+    auto returned_document = m_collection.find_one(filter_vans.view());
+
+    if (returned_document.has_value()) {
+        view = returned_document->view()["PlateNumber"].get_utf8().value;
+        std::string plate_number = view.to_string();
+
+        double days = returned_document->view()["Days"].get_double().value;
+
+        view = returned_document->view()["ClientName"].get_utf8().value;
+        std::string client_name = view.to_string();
+
+        view = returned_document->view()["ClientDNI"].get_utf8().value;
+        std::string client_DNI = view.to_string();
+
+        view = returned_document->view()["TimeDate"].get_utf8().value;
+        std::string time_date = view.to_string();
+
+        view = returned_document->view()["TimeHour"].get_utf8().value;
+        std::string time_hour = view.to_string();
+
+        bool is_check_in = returned_document->view()["IsCheckIn"].get_bool().value;
+
+        return Rentable::RentTransaction { plate_number, days, client_name, client_DNI, time_date, time_hour, is_check_in };
+    }
+
+    return Rentable::RentTransaction {};
+}
+
+std::vector<std::string> DataAccess::get_currently_rented()
+{
+    std::vector<std::string> currently_rented {};
+    auto filter_vans_rented = document {} << "IsRented"
+                                          << true
+                                          << finalize;
+
+    auto cursor = m_collection.find(filter_vans_rented.view());
+
+    for (auto&& doc : cursor) {
+        bsoncxx::stdx::string_view view = doc["PlateNumber"].get_utf8().value;
+        std::string plate_number = view.to_string();
+        currently_rented.emplace_back(plate_number);
+    }
+
+    return currently_rented;
+}
+
+DataAccess::DBOp DataAccess::add_rent_transaction_entry(const Rentable::RentTransaction& rent_transaction, bool is_check_in)
 {
     spdlog::info(fmt::format("Adding Rent Transaction to DB: {} and Collection: {}", m_db.name().to_string(), m_collection_name));
 
@@ -178,13 +232,15 @@ DataAccess::DBOp DataAccess::add_rent_transaction_entry(const Rentable::RentTran
         << rent_transaction.client_name()
         << "ClientDNI"
         << rent_transaction.client_DNI()
+        << "IsCheckIn"
+        << rent_transaction.is_check_in()
         << bsoncxx::builder::stream::finalize;
 
     bsoncxx::stdx::optional<mongocxx::result::insert_one> insert_result = m_collection.insert_one(doc_value.view());
 
     mongocxx::collection my_vans_collection = db()["my_vans"];
     bsoncxx::stdx::optional<mongocxx::result::update> result_update = my_vans_collection.update_one(document {} << "PlateNumber" << rent_transaction.plate_number() << bsoncxx::builder::stream::finalize,
-        document {} << "$set" << open_document << "IsRented" << true << close_document << finalize);
+        document {} << "$set" << open_document << "IsRented" << is_check_in << close_document << finalize);
 
     if (result_update) {
         spdlog::info("Number of modified docs: {}", result_update->modified_count());

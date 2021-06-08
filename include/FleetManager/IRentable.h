@@ -2,5 +2,5 @@
 #include <string>
 
 class IRentable {
-    virtual float calc_rental_fee(const float& days, const int& cat) = 0;
+    virtual double calc_rental_fee(const double& days, const int& cat) = 0;
 };

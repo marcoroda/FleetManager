@@ -9,8 +9,6 @@
 #include <chrono>
 #include <fmt/format.h>
 #include <imgui.h>
-#include <iomanip>
-#include <iostream>
 #include <mongocxx/cursor.hpp>
 #include <spdlog/spdlog.h>
 
@@ -180,11 +178,7 @@ void add_rentable_to_db(const mongocxx::database& db)
     }
 }
 
-void add_rentable_transaction(const mongocxx::database& db, const Rentable::RentTransaction& rent_transaction)
-{
-}
-
-void rent(const mongocxx::database& db)
+void rent_check_in(const mongocxx::database& db)
 {
     static bool btn_st_rent_van { false };
     static bool show_current_rented_vans { false };
@@ -208,20 +202,20 @@ void rent(const mongocxx::database& db)
         ImGui::EndCombo();
     }
 
-    static float days_input { 0 };
+    static double days_input { 0 };
     static std::array<char, 50> client_name_input { "" };
     static std::array<char, 50> client_DNI_input { "" };
     static float deposit_input { 0 };
 
     auto data_access_obj = Data::DataAccess { db, "my_vans" };
-    auto van_to_rent_from_db = data_access_obj.get_by_plate_number(item_to_rent);
+    auto van_to_rent_from_db = data_access_obj.get_van_in_db_by_plate_number(item_to_rent);
     GUI::spacing_vertical(3);
     if (!item_to_rent.empty()) {
         ImGui::Text("%s", fmt::format("Brand: {}", van_to_rent_from_db.brand()).data());
         ImGui::Text("%s", fmt::format("Model: {}", van_to_rent_from_db.model()).data());
         ImGui::Text("%s", fmt::format("Number of Doors: {} ", van_to_rent_from_db.doors()).data());
         ImGui::Text("%s", fmt::format("Cat: {} ", van_to_rent_from_db.cat()).data());
-        ImGui::InputFloat("Insert Number of Days", &days_input, 1, 100, "%.1f");
+        ImGui::InputDouble("Insert Number of Days", &days_input, 1, 100, "%.1f");
 
         GUI::spacing_vertical(2);
 
@@ -251,14 +245,15 @@ void rent(const mongocxx::database& db)
         std::strftime(char_date, 100, "%d/%m/%Y", std::localtime(&in_time_t));
         std::strftime(char_hour, 100, "%T", std::localtime(&in_time_t));
 
-        auto rent_transaction = Rentable::RentTransaction { van_to_rent_from_db.plate_number(), days_input, client_name_input.data(), client_DNI_input.data(), char_date, char_hour };
+        auto rent_transaction = Rentable::RentTransaction { van_to_rent_from_db.plate_number(), days_input, client_name_input.data(), client_DNI_input.data(), char_date, char_hour, true };
         auto rent_transaction_data = Data::DataAccess { db, "rent_transactions" };
-        auto result = rent_transaction_data.add_rent_transaction_entry(rent_transaction);
+        auto result = rent_transaction_data.add_rent_transaction_entry(rent_transaction, true);
         if (result == Data::DataAccess::DBOp::OK) {
             spdlog::info(fmt::format("Rent Transaction added to DB"));
             ImGui::OpenPopup("Van Transaction Added Successfully!");
         } else {
             ImGui::OpenPopup("Van Transaction Failed!");
+            spdlog::info(fmt::format("Missing added information on mandatory fields!!"));
         }
     }
 
@@ -279,13 +274,93 @@ void rent(const mongocxx::database& db)
         ImGui::EndPopup();
     }
 
-    //    ImGui::Checkbox("Show currently rented vans", &show_current_rented_vans);
-    //    if (show_current_rented_vans) {
-    //        auto data = Data::DataAccess { db, "rented_vans" };
-    //        GUI::show_all_vans(data, "collection: rented_vans");
-    //    }
-
     ImGui::PopItemWidth();
+}
+
+void rent_check_out(const mongocxx::database& db)
+{
+    static bool btn_st_check_out_van { false };
+    static bool show_current_rented_vans { false };
+    static bool show_check_out_client_info { false};
+
+    auto data_access = Data::DataAccess { db, "my_vans" };
+    std::vector<std::string> currently_rented_vans_plate_number = data_access.get_currently_rented();
+
+    static std::string item_to_checkout {};
+    if (currently_rented_vans_plate_number.empty()) {
+        show_check_out_client_info = false;
+        return;
+    }
+    else {
+        item_to_checkout = currently_rented_vans_plate_number.at(0);
+        show_check_out_client_info = true;
+    }
+
+    ImGui::PushItemWidth(200);
+    if (ImGui::BeginCombo("Currently Rented Vans", item_to_checkout.data())) {
+        for (auto& item : currently_rented_vans_plate_number) {
+            bool is_selected = (item_to_checkout == item); // You can store your selection however you want, outside or inside your objects
+            if (ImGui::Selectable(item.data(), is_selected))
+                item_to_checkout = item;
+        }
+        ImGui::EndCombo();
+    }
+
+    auto data_access_obj = Data::DataAccess { db, "rent_transactions" };
+    auto van_to_check_out_from_db = data_access_obj.get_rented_in_db_by_plate_number(item_to_checkout);
+    GUI::spacing_vertical(3);
+
+    if (show_check_out_client_info) {
+        ImGui::Text("%s", fmt::format("Client Name: {}", van_to_check_out_from_db.client_name()).data());
+        ImGui::Text("%s", fmt::format("Client DNI: {}", van_to_check_out_from_db.client_DNI()).data());
+        ImGui::Text("%s", fmt::format("Days Rented {}", van_to_check_out_from_db.days()).data());
+
+        for (int nbr_spacing = 0; nbr_spacing < 3; ++nbr_spacing)
+            ImGui::Spacing();
+
+        ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+        btn_st_check_out_van = ImGui::Button("Check Out");
+        ImGui::PopFont();
+    }
+
+    if (btn_st_check_out_van) {
+        spdlog::info(fmt::format("Selected Item to checout is: {}", item_to_checkout));
+        auto now = std::chrono::system_clock::now();
+        auto in_time_t = std::chrono::system_clock::to_time_t(now);
+        char char_date[100];
+        char char_hour[100];
+        std::strftime(char_date, 100, "%d/%m/%Y", std::localtime(&in_time_t));
+        std::strftime(char_hour, 100, "%T", std::localtime(&in_time_t));
+
+        auto rent_transaction = Rentable::RentTransaction { van_to_check_out_from_db.plate_number(), van_to_check_out_from_db.days(), van_to_check_out_from_db.client_name(), van_to_check_out_from_db.client_DNI(), char_date, char_hour, false };
+        auto rent_transaction_data = Data::DataAccess { db, "rent_transactions" };
+        auto result = rent_transaction_data.add_rent_transaction_entry(rent_transaction, false);
+
+        if (result == Data::DataAccess::DBOp::OK) {
+            spdlog::info(fmt::format("Rent Transaction check-out added to DB"));
+            ImGui::OpenPopup("Van Checked Out Successfully!");
+        } else {
+            spdlog::info(fmt::format("Rent Transaction check-out failed"));
+            ImGui::OpenPopup("Van Check Out Failed!");
+        }
+    }
+
+    if (ImGui::BeginPopupModal("Van Checked Out Successfully!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(500, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopupModal("Van Check Out Failed!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(500, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
 }
 
 void spacing_vertical(const int& nbr_spaces)

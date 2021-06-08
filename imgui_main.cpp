@@ -65,8 +65,12 @@ int main()
         GUI::add_rentable_to_db(db);
         ImGui::End();
 
-        ImGui::Begin("Rent");
-        GUI::rent(db);
+        ImGui::Begin("Rent Check-In");
+        GUI::rent_check_in(db);
+        ImGui::End();
+
+        ImGui::Begin("Rent Check-Out");
+        GUI::rent_check_out(db);
         ImGui::End();
 
 
